@@ -1,0 +1,267 @@
+\documentclass[a4paper,10pt]{article}
+
+\usepackage[utf8x]{inputenc}
+\usepackage[brazil]{babel}      %permite acentuação automática para o Portugues do Brasil,
+\usepackage[T1]{fontenc}        %permite a hifenização correta em Portugues
+%\usepackage[ansinew]{inputenc}  %permite a inserção de acentos (Windows)
+\usepackage{amsfonts}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=2cm,right=2cm,nohead,nofoot]{geometry}
+%\usepackage[lined,algo2e,ruled,portugues]{algorithm2e}
+\usepackage{indentfirst}
+\usepackage{lscape}
+\usepackage{graphicx}
+
+\newcommand{\fw}[1]{\emph{#1}}
+
+%-------------------------------------------------------------------
+
+\begin{document}
+
+\author{Hugo Cabral Tannús \and Humberto José Longo}
+\title{Proposta de Trabalho de Conclusão de Curso}
+\date{\today}
+\maketitle
+
+\section{Introdu\c{c}\~{a}o}
+\label{sec:intro}
+Problemas de otimização combinatória são comumente utilizados em computação para
+resolver problemas reais, geralmente, ligados à área de planejamento. Nesse
+aspecto, são comuns buscar uma combinação de valores para dadas variáveis para
+minimizar o custo financeiro de um projeto ou maximizar o lucro obtido com a
+produção de quantidades diferenciadas de cada mercadoria. Não obstante, é comum
+encontrar problemas em que as variáveis envolvidas apresentam a restrição de 
+poderem assumir apenas valores inteiros; também é comum que o problema
+apresente milhares de variáveis; e é possível, ainda que não haja um método
+polinomial que resolva o problema, comprometendo, assim, as chances de construir
+um algoritmo que consiga encontrar deterministicamente uma solução ótima, uma
+vez que, para cada variável acrescentada ao problema, o custo para encontrar uma
+solução ótima cresce exponencialmente. Tais problemas são classificados como
+$\mathcal{NP}$-difíceis.
+
+Nesse âmbito, o paradigma \fw{Branch \& Bound} (B\&B) é uma das principais 
+ferramentas de construção de algoritmos que resolvam problemas de otimização
+$\mathcal{NP}$-difíceis de maneira eficiente. Dado um determinado problema,
+um algoritmo B\&B fará uma varredura em todo o espaço das possíveis soluções
+(viáveis e inviáveis) em busca da melhor delas. Contudo, realizar simplesmente
+uma enumeração de cada solução torna-se uma abordagem ineficiente, uma vez que
+há um crescimento exponencial das soluções em potencial e, por isso, o algoritmo 
+faz uso de
+limites (``bounds'') para as funções a serem otimizadas, combinando os
+resultados com o valor
+da atual melhor solução. Essa abordagem se torna interessante em problemas de
+larga escala, pois economiza recursos da máquina e viabiliza buscar uma solução
+ótima, já que permite que o
+algoritmo implicitamente realize a busca apenas em parte do espaço de soluções
+
+% Em qualquer ponto durante o processo de solução, o status da solução em relação
+% á busca do espaço de solução é descrita por um ``pool'' de subconjuntos ainda
+% inexplorados desse espaço e a melhor solução encontrada até agora. Inicialmente,
+% há apenas um único subconjunto, nominalmente o espaço de slução completo, e o
+% melhor resultado é infinito. Subsepaços inexplorados são represtnados por nós
+% em uma árvore de busca gerada dinamincamente que, inicialmente, contém apenas o
+% nó raiz. Cada iteração de um algoritmo B\&B clássico processa um destes nós.
+% A iteração tem três componentes principais: seleção do nó a ser processado,
+% cálculo de limites (ou delimitação), e ramificação.
+% 
+% A sequência adotada para cada uma destas etapas variam de acordo com a etartégia
+% escolhida para selecionar o próximo nó a ser porecessado. Por exemplo, se a
+% seleção do próximo nó for baseada no valor limite dos subproblemas, então a
+% primeira operação de uma iteração, após a escolha do nó, é a ramificação em dois
+% ou mais nós (subespaços) que serão investigados em iterações subsequentes.
+% Em cada ramificação realaizada, é verificado se o subespaço consiste em uma
+% única solução, em cuso caso será comparado com a melhor solução atual e, então,
+% mantida a melhor dentre elas; caso contrário, é calculado a função delimitadora
+% para o subespaço e comparada com a melhor solução atual e, caso seja possível
+% afirmar/estabelecer que o subespaço não pode conter uma solução ótima, então
+% todo o sbespaço é descartado. Do contrário, ele é armazenado em um conjunto de
+% nós viaeis juntamente com os seus limites. A busca termina quando não houverem
+% mais partes inexploradas do espaço de solução, e asolução ótima será então o
+% valor armazenado como sendo a ``atual melhor''.
+
+A seção 2 trará um breve resumo sobre aspectos teóricos envolvidos no projeto.
+A seção 2.1 irá definir o conceito de Programação Inteira, e as seções 2.1.1
+tratará, especificamente, do problema da Mochila Multi-Dimensional. A seção 2.2
+trarão comentários acerca  e o algoritmo \fw{Branch \& Bound}. A seção 3 destacará
+algumas das principais
+ferramentas computacionais para modelagem de problemas de programação inteira.
+E, por fim, as seções 4 e 5 definirão a proposta para o Projeto Final do Curso,
+bem como o cronograma das atividades a serem realizadas.
+
+\section{Fundamentação Teórica}
+\label{sec:teoria}
+
+\subsection{Programação Inteira \& Inteira Mista}
+\label{ssec:pi}
+Denomina-se \fw{Programação Inteira} um problema de otimização que trabalha com
+variáveis que podem assumir valores discretos (ou inteiros). Quando apenas parte
+das variáves está sujeita a essa restrição, o problema passa a ser classificado
+como \fw{Programação Inteira Mista}. Há ainda a \fw{Programação Binária} ou
+\fw{Programação Zero-Um}, em que as variáveis estão restritas a receber apenas
+dois valores (\fw{0} ou \fw{1}, \fw{verdadeiro} ou \fw{falso}, \fw{sim} ou
+\fw{não}, etc).
+
+\subsubsection{0--1 \fw{Multidimensional Knapsack Problem}}
+\label{sssec:mdkp}
+O problema das mochilas (0--1 \fw{Knapsack Problem}) consiste em, dado
+um conjunto de objetos, cada um associado a um peso e um valor,
+determinar quais deles devem ser escolhidos de modo que o peso total
+seja menor que um dado limite e o valor total seja máximo. Embora este
+problema pertença à classe dos problemas $\mathcal{NP}$-difíceis,
+geralmente pode ser resolvido de forma eficiente com a utilização da
+técnica de programação dinâmica nos casos em que os pesos não são
+fracionários.
+
+Considere uma mochila de capacidade $b$ e um conjunto de $n$ objetos,
+identificados como $1,2,\dots,n$, cada um com peso de $a_j \in
+\mathbb{Z}^+$ unidades e com valor $c_j$. Definindo-se que $x_j$ é uma
+variável binária que indica se o objeto $j$ foi colocado na mochila
+($x_j=1$) ou não ($x_j=0$), o problema é formulado como:
+
+$$
+ \rotatebox[origin=c]{90}{\small Knap} \,  \, \left\{
+  \begin{array}{rrcl}
+   \multicolumn{4}{l}{\mbox{Max} \quad z \> = \> c.x}    \\
+   \multicolumn{4}{l}{\mbox{sujeito a}}                 \\
+   & A.x & \leq & b            \\
+   &   x & \in  & \{0,1\}^{n}  \\
+  \end{array}
+  \right.
+$$
+
+O problema das mochilas multidimensionais \fw{MdKP} (0--1
+\fw{Multidimensional Knapsack Problem}) é uma generalização do
+problema das mochilas definido anteriormente. Considere que dada uma
+mochila de $m$ dimensões, cada uma de capacidade $b_i$, a matriz $A$,
+de dimensão $m \times n$, representa o peso dos $n$ objetos para cada
+uma das $m$ dimensões da mochila. O objetivo é encontrar um
+subconjunto dos $n$ objetos cujo valor total seja máximo e cujo peso
+total respeite o limite de cada uma das dimensões da mochila.
+Novamente definindo-se que $x_j$ é uma variável binária para indicar a
+escolha ou não do objeto $j$, então o problema é formulado como:
+
+$$
+ \rotatebox[origin=c]{90}{\small MdKP} \,  \, \left\{
+  \begin{array}{rrclc}
+   \multicolumn{4}{l}{\mbox{Max} \quad z \> = \> c.x}    \\
+   \multicolumn{4}{l}{\mbox{sujeito a}}                 \\
+   & A_{i}.x & \leq & b_{i}       & i \> = \> 1,\dots, m \\
+   &       x & \in  & \{0,1\}^{n} &                      \\
+\end{array}
+\right.
+$$
+%opening
+
+\subsection{\fw{Branch \& Bound}}
+\label{ssec:b&b}
+O algoritmo \fw{Branch \& Bound} (B\&B) é um algoritmo enumerativo, organizada em uma
+estrutura de árvore onde cada nó representa uma espaço de soluções possíveis.
+Cada ramificação na árvore corresponde a uma parte do espaço de soluções
+representados pelo nó pai, por isso também denominada de subespaço. Essa estrutura
+permite que todos as possíveis soluções de um problema de programação inteira
+sejam enumeradas de maneira implícita ou explícita, garantindo assim que todas as
+soluções ótimas sejam encontradas.
+
+Cada iteração de um algoritmo B\&B clássico processa um destes nós. Uma iteração
+é composta,
+fundamentalmente, por três etapas: etapa de separação (ou ramificação),
+relaxação e seleção do próximo nó (ou sondagem). Na etapa de separação, o
+problema original $(P)$ é
+separado em $q$ subproblemas $(P_1),(P_2),\dots,(P_q)$ sujeitos às
+seguintes condições:
+
+\begin{description}
+ \item[(S1)] Toda a solução viável de $(P)$ é uma solução de somente um dos subproblemas $(P_i)$, $i=1,2,\dots,q$.
+ \item[(S2)] Uma solução viável de qualquer um dos subproblemas $(P_i)$, $i=1,2,\dots,q$ é, também, uma solução viável de $(P)$.
+\end{description}
+
+Estas condições asseguram que o conjunto das soluções viáveis de cada um dos subproblemas $(Pi)$, $i = 1, 2,
+\dots, q$ é uma partição do conjunto das soluções viáveis de $(P)$. Os subproblemas $(Pi)$, $i = 1, 2, \dots, q$ são
+denominados descendentes de $(P)$ e podem, sucessivamente, gerar seus próprios descendentes.
+
+A relaxação consiste em, temporariamente, ignorar algumas restrições do problema $(P)$ visando torná-lo
+mais fácil de resolver. A condição que deve ser satisfeita é que o conjunto de soluções viáveis do problema
+original $(P)$ esteja contido no conjunto de soluções viáveis do problema relaxado $(P_R)$. Isto implica que:
+
+\begin{description}
+  \item[(R1)] Se $(P_R)$ não tem solução viável, então o mesmo é verdadeiro para $(P)$.
+  \item[(R2)] O valor mínimo de $(P)$ não é menor que o valor máximo de $(P_R)$.
+  \item[(R3)] Se uma solução ótima de $(P_R)$ é viável em $(P)$, então ela é uma solução ótima de $(P)$. 
+\end{description}
+
+Dentre as formas possíveis de relaxação, destaca-se a eliminação das restrições de integralidade das
+variáveis, o que transforma o problema inteiro misto em um problema linear (PL) padrão.
+Na análise dos problemas candidatos, é necessário determinar quais são promissores e, portanto, devem ser
+examinados, e quais podem ser sumariamente descartados. Isto é realizado na etapa de sondagem onde o
+problema candidato $(PC)$ é eliminado (descartado para análises futuras), juntamente com todos os seus
+descendentes, se satisfizer à pelo menos um dos seguintes critérios:
+
+\begin{description}
+  \item [(CS1)] O problema candidato relaxado $(PC_R)$ não tem solução viável. Devido a (R1), isto significa que
+o problema candidato $(PC)$ também não tem solução viável.
+  \item [(CS2)] A solução ótima do problema candidato relaxado $(PC_R)$ é pior (\fw{bounding}) do que a melhor
+solução atualmente conhecida para $(P)$ (solução incumbente). Observar que a solução ótima do
+problema candidato relaxado é sempre melhor ou igual à solução do problema candidato e de seus
+descendentes.
+  \item [(CS3)] Uma solução ótima do problema relaxado $(PC_R)$ é viável, também, em $(PC)$. Neste caso, devido
+a (R3), ela é ótima em $(PC)$ e, devido a (S2) ela é também factível em $(P)$. Caso seja melhor que a
+incumbente atual, a solução deste problema candidato passa a ser a nova incumbente. 
+\end{description}
+
+\section{\fw{MIP Solvers}}
+\label{solvers}
+A implementação de um algoritmo Bench \& Bound exige que seja definido um limite
+superior ou inferior para o problema. Para tanto, utiliza-se de algumas
+ferramentas de modelagem de programação inteira, conhecidas como \fw{Mixed
+Integer Programming Solvers}. Para este projeto, será escolhido uma dentre
+quatro destes solucionadores como ferramenta para a modelagem e implementação do
+problema, sendo dois deles não comerciais e dois comerciais, que são,
+respectivamente: \fw{GLPK}, \fw{SCIP}, \fw{Cplex} e \fw{Gurobi}.
+
+GLPK - \fw{GNU Linear Programming Kit} - é um pacote de software destinado à
+resolução de problemas de programação linear em larga escala e de programação
+inteira mista. É um dos MIP Solvers mais utilizados, já que está disponível nos
+repositórios de pacotes das principais distribuições linux existentes; em
+contrapartida ao desempenho e eficácia inferiores se comparado a outros
+solucionadores. Entre os principais componentes inclusos no GLPK, estão:
+os métodos simplex primal e dual e o método \fw{Branch \& Cut}; uma API para a
+linguagem C, e; o suporte para a linguagem de modelagem \fw{GNU MathProg}.
+
+O SCIP - \fw{Solving Constraint Integer Programs} - desenvolvido e mantido pelo \fw{Zuze Institute Berlin} (ZIB), está atualmente entre os MIB Solvers não comerciais de melhor desempenho. Voltado para programação inteira e para a abordagem \fw{Branch, Cut \& Price}, o SCIP é um framework flexível, uma vez que permite ao usuário adicionar funcionalidades pro meio de plugins, além de dar suporte a outros solucionadores de programação linear, que incluem, inclusive, os solvers CPLEX e o GUROBI. Disponível para sistemas Windows, Linux, MacOS e SunOS.
+
+O CPLEX é um solucionador de problemas matemáticos de alto desempenho desenvolvido pela IBM, destinado a resolver problemas de programação linear, programação inteira mista e programação quadrática. É uma ferramenta estável, além de contar com o suporte técnico da IBM, o que a torna uma ferramenta confiável. Possui ambiente de desenvolvimento integrado e linguagem de modelagem descritiva, além de disponibilizar várias opções de algoritmos e de modelos de entrada e saída de dados. O CPLEX está disponível para diferentes sistemas operacionais, que incluem o Windows, o Linux e o MacOS.
+
+Por fim, o Gurobi Optimizer, assim como o CPLEX, é voltado para programação linear, programação inteira mista e programação quadrática, diferenciando-se da ferramenta anterior pelo fato de ter sido projetada para trabalhar com programação paralela, por meio do uso de múltiplos processadores. Inclui implementações de alto desempenho para os métodos Simplex primal e dual, além de métodos como de ``corte de planos'' e heurísticas para modelos MIP e interfaces orientadas a objeto para as linguagens C++, Java, Python e .Net. Possui versões para as plataformas Windows, Linux, MacOS, dentre outros, além de oferecer licenças gratuitas para estudantes acadêmicos.
+
+\section{Proposta}
+\label{sec:prop}
+
+Resolver um problema de programação inteira, mais especificamente o problema da
+Mochila Multi-dimensional, utilizando o algoritmo de \fw{Branch \& Bound}, por 
+meio de uma ferramenta de resolução de problemas inteiros Mistos.
+
+\section{Cronograma}
+\label{sec:cron}
+
+\begin{table}[h]
+       \centering
+       \begin{tabular}{|l|p{.7cm}|p{.7cm}|p{.7cm}|p{.7cm}|p{.7cm}|p{.7cm}|p{.7cm}|p{.7cm}|}
+               \cline{2-9}
+               \multicolumn{1}{c|}{} & \multicolumn{4}{|c|}{\bf PFC--1} &
+\multicolumn{4}{|c|}{\bf PFC--2}\\
+               \hline \textbf{Etapa} & Mar & Abr & Mai & Jun & Ago & Set & Out & Nov \\
+               \hline Revisão bibliográfica & X & X & & & & & & \\
+               \hline Estudo \& pesquisa: PL \fw{vs} PI & & X & X & & & & & \\
+	       \hline Estudo \& pesquisa: \fw{MDKP} & & & X & X & & & & \\
+	       \hline Estudo \& pesquisa: \fw{B\&B} & & & X & X & X & & & \\
+               \hline Projeto algoritmico & & & X & X & & & &\\
+               \hline Estudo \& pesquisa: heurísticas & & & & & X & X & X & \\
+               \hline Implementação do algoritmo & & & & & X & X & & \\
+	       \hline Definição de heurísticas & & & & & & X & X & \\
+	       \hline Implementação de heurísticas & & & & & & & X & X \\
+               \hline Testes e Comparação de Resultados & & & & & & & & X \\
+	       \cline{1-9}
+       \end{tabular}
+       \caption{Cronograma a ser seguido durante o ano.}
+\end{table}
+
+\end{document}
