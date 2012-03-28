@@ -1,0 +1,13 @@
+\chapter{MIP Solvers}
+\label{cap:solv}
+
+\section{GLPK - \fw{GNU Linear Programming Kit}}
+\label{sec:glpk}
+
+\section{SCIP - \fw{Solving Constraints Integer Programs}}
+\label{sec:scip}
+
+\section{CPLEX}
+\label{sec:cplex}
+
+\section{Gurobi Optimizer
